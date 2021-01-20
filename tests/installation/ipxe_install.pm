@@ -61,6 +61,7 @@ sub set_bootscript {
     my $host        = get_required_var('SUT_IP');
     my $ip          = inet_ntoa(inet_aton($host));
     my $http_server = get_required_var('IPXE_HTTPSERVER');
+    diag("CZERW: -${http_server}-");
     my $url         = "$http_server/v1/bootscript/script.ipxe/$ip";
     my $arch        = get_required_var('ARCH');
     my $autoyast    = get_var('AUTOYAST', '');
