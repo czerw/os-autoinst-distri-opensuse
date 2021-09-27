@@ -12,7 +12,7 @@ our @EXPORT = qw(
 sub select_kernel {
     my $kernel = shift;
 
-    assert_screen ['grub2', "grub2-$kernel-selected"], 100;
+    assert_screen ['grub2', "grub2-$kernel-selected"], 300;
     if (match_has_tag "grub2-$kernel-selected") {    # if requested kernel is selected continue
         send_key 'ret';
     }
