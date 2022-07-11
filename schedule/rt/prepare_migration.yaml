@@ -1,0 +1,7 @@
+description: 'Maintainer: kernel-qa@suse.de'
+name: 'prepare_migration@64bit ( qemu )'
+schedule:
+  - boot/boot_to_desktop
+  - rt/prepare_migration
+  - shutdown/cleanup_before_shutdown
+  - shutdown/shutdown
