@@ -76,7 +76,7 @@ sub run {
             "min prio -> $sched_settings->{$sched_type}->{min}\nmax prio -> $sched_settings->{$sched_type}->{max}"
         );
     }
-    my $sched_features =  is_sle("15-sp4+") ? '/sys/kernel/debug/sched/features' : '/sys/kernel/debug/sched_features';
+    my $sched_features = is_sle("15-sp4+") ? '/sys/kernel/debug/sched/features' : '/sys/kernel/debug/sched_features';
     record_info('sched_features', script_output "cat ${sched_features}");
 
     # RealtimeKit is a D-Bus system service that changes the scheduling policy of user processes/threads to SCHED_RR on request
