@@ -315,6 +315,9 @@ sub run {
     select_serial_terminal;
     export_ltp_env;
 
+    script_run "echo nameserver 10.168.192.1 > /etc/resolv.conf";
+    script_run "cat /etc/resolv.conf";
+
     if (script_output('cat /sys/module/printk/parameters/time') eq 'N') {
         script_run('echo 1 > /sys/module/printk/parameters/time');
         $grub_param .= ' printk.time=1';
