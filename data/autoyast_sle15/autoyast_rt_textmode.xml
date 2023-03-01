@@ -42,7 +42,7 @@
   <add-on>
     <add_on_products config:type="list">
       <listentry>
-        <media_url>http://download.suse.de/ibs/SUSE:/SLE-15-SP4:/Update:/Products:/SLERT/standard/</media_url>
+        <media_url>http://download.suse.de/ibs/SUSE/Products/SLE-Product-RT/15-SP5/x86_64/product/</media_url>
         <alias>REPO_MODULE_RT</alias>
         <product>Module-RT-POOL</product>
         <product_dir>/</product_dir>
@@ -52,7 +52,7 @@
         <ask_on_error config:type="boolean">false</ask_on_error>
       </listentry>
       <listentry>
-        <media_url>http://openqa.suse.de/assets/repo/SLE-15-SP4-Module-RT-POOL-x86_64-CURRENT</media_url>
+        <media_url>http://download.suse.de/ibs/SUSE/Products/SLE-Module-RT/15-SP5/x86_64/product/</media_url>
         <alias>SLE_RT_OPENQA</alias>
         <product>SLE_RT_TEST_OPENQA</product>
         <product_dir>/</product_dir>

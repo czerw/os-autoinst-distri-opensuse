@@ -17,6 +17,8 @@ use utils qw(zypper_ar);
 sub run {
     select_serial_terminal;
     # Add repositories if they are requested
+    script_run "echo nameserver 10.168.192.1 > /etc/resolv.conf";
+    script_run "cat /etc/resolv.conf";
     zypper_ar(get_var('REPO_RT_IMAGES'), name => 'repo_rt_images') if get_var('REPO_RT_IMAGES');
     zypper_ar(get_var('REPO_RT_STANDARD'), name => 'repo_rt_standard') if get_var('REPO_RT_STANDARD');
 }

@@ -2,7 +2,7 @@ name:          prepare_baremetal_rt
 description:    >
     Installation schedule to prepare bare metal for RT using IPXE.
 vars:
-    SYSTEM_ROLE: minimal
+    SYSTEM_ROLE: textmode
     DESKTOP: textmode
     SCC_ADDONS: sdk
 schedule:

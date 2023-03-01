@@ -1,11 +1,8 @@
 ---
 description: 'The default installation of RT product in GUI. Upload the installed system for further validation testing.'
 name: 'rt-product@64bit ( qemu )'
-vars:
-  EXTRABOOTPARAMS: startshell=1
 schedule:
   - installation/bootloader
-  - rt/add_product
   - installation/welcome
   - installation/scc_registration
   - installation/addon_products_sle
@@ -23,7 +20,6 @@ schedule:
   - installation/await_install
   - installation/logs_from_installation_system
   - installation/reboot_after_installation
-  - installation/exit_startshell
   - installation/grub_test
   - installation/first_boot
   - console/hostname
