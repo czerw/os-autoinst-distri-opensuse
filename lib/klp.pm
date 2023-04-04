@@ -12,7 +12,7 @@ use Exporter 'import';
 
 use testapi;
 use utils;
-use version_utils 'is_sle';
+use version_utils qw(is_sle is_sle_micro);
 
 our @EXPORT = qw(
   install_klp_product is_klp_pkg find_installed_klp_pkg klp_pkg_eq
@@ -33,7 +33,7 @@ sub install_klp_product {
         $version = '12';
     }
     # SLE15 has different structure of modules and products than SLE12
-    if (is_sle('15+')) {
+    if (is_sle('15+') || is_sle_micro('5.4+')) {
         $lp_product = 'sle-module-live-patching';
         $lp_module = 'SLE-Module-Live-Patching';
     }
