@@ -17,6 +17,7 @@ use publiccloud::azure;
 use publiccloud::gce;
 use publiccloud::openstack;
 use serial_terminal 'select_serial_terminal';
+use version_utils qw(is_jeos);
 
 sub run {
     my ($self, $args) = @_;
@@ -35,8 +36,10 @@ sub run {
     }
 
     # Download the given image via wget. Note that by default wget retries 20 times before giving up
-    my $cmd = "wget -q --server-response --no-check-certificate --retry-connrefused --retry-on-host-error $img_url -O $img_name";
-    # A generious timeout is required because downloading up to 30 GB (Azure images) can take more than an hour.
+    my $wget_cmd = "wget -q --server-response --no-check-certificate --retry-connrefused --retry-on-host-error";
+    my $cmd = "$wget_cmd $img_url -O $img_name";
+    my $cmd_sha256 = "$wget_cmd $img_url.sha256 -O $img_name.sha256";
+    # A generous timeout is required because downloading up to 30 GB (Azure images) can take more than an hour.
     my $rc = script_run("(set -o pipefail && $cmd 2>&1 | tee download.txt)", timeout => 120 * 60);
     if ($rc != 0) {
         # Check for 404 errors and make them better visible
@@ -47,6 +50,13 @@ sub run {
         die "404 - Image not found" if ($output =~ "ERROR 404: Not Found");
         die "wget failed with return code $rc";
     }
+
+    # IBS sync does not pull checksum file for JeOS Cloud image
+    unless (is_jeos) {
+        assert_script_run $cmd_sha256;
+        assert_script_run "sha256sum -c $img_name.sha256";
+    }
+
     $provider->upload_img($img_name);
 }
 

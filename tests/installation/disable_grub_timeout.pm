@@ -44,11 +44,6 @@ sub run {
             send_key 'ret';
             return;
         }
-        if (!get_var('SOFTFAIL_1129504') && is_upgrade && is_sle) {
-            record_info('Bootloader conf', 'Workaround for bsc#1129504 grub2 timeout is too fast', result => 'softfail');
-            send_key 'alt-c';
-            return;
-        }
     }
     assert_screen([qw(inst-bootloader-settings inst-bootloader-settings-first_tab_highlighted)]);
     # Depending on an optional button "release notes" we need to press "tab"
@@ -64,7 +59,7 @@ sub run {
       ((check_var('UEFI', '1')) ? 'alt-t' : 'alt-r')    # uefi on x86 has different behavior
       : 'alt-t';    # t is the default for non x86
 
-    send_key_until_needlematch 'inst-bootloader-options-highlighted', $bsc_1208266_needed ? $bootloader_shortcut : 'right';
+    send_key_until_needlematch 'inst-bootloader-options-highlighted', $bsc_1208266_needed ? $bootloader_shortcut : 'right', 20, 2;
     assert_screen 'installation-bootloader-options';
     # Select Timeout dropdown box and disable
     send_key 'alt-t';

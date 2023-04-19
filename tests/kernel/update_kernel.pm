@@ -309,7 +309,7 @@ sub start_heavy_load {
     my @pids;
     my $root = get_ltproot;
 
-    script_run("grep -v 'module\|add_key' $root/runtest/syscalls >$root/runtest/syscalls.klp");
+    script_run("grep -v 'module\\|add_key' $root/runtest/syscalls >$root/runtest/syscalls.klp");
 
     for my $runfile (qw(syscalls.klp ltp-aiodio.part4)) {
         push @pids, background_script_run("yes | $root/runltp -f $runfile &>/dev/null");
@@ -408,7 +408,7 @@ sub run {
         $incident_id = get_required_var('INCIDENT_ID');
     }
 
-    $kernel_package = 'kernel-default-base' if is_sle('=11-SP4');
+    $kernel_package = 'kernel-default-base' if is_sle('<12');
     $kernel_package = 'kernel-rt' if check_var('SLE_PRODUCT', 'slert');
 
     if (get_var('KGRAFT')) {

@@ -32,8 +32,9 @@ use warnings;
 use Carp qw(croak);
 use Mojo::JSON qw(decode_json);
 use YAML::PP;
-use utils qw(file_content_replace zypper_call);
+use utils qw(file_content_replace);
 use publiccloud::utils qw(get_credentials);
+use mmapi 'get_current_job_id';
 use testapi;
 use Exporter 'import';
 
@@ -66,6 +67,8 @@ our @EXPORT = qw(
   qesap_wait_for_ssh
   qesap_cluster_log_cmds
   qesap_cluster_logs
+  qesap_get_vnet
+  qesap_get_az_resource_group
 );
 
 =head1 DESCRIPTION
@@ -158,10 +161,9 @@ sub qesap_create_ansible_section {
 =cut
 
 sub qesap_pip_install {
-    zypper_call('in python39');
-    assert_script_run("python3.9 -m venv " . QESAPDEPLOY_VENV . " && source " . QESAPDEPLOY_VENV . "/bin/activate");
-    enter_cmd 'pip3.9 config --site set global.progress_bar off';
-    my $pip_ints_cmd = 'pip3.9 install --no-color --no-cache-dir ';
+    assert_script_run("python3.10 -m venv " . QESAPDEPLOY_VENV . " && source " . QESAPDEPLOY_VENV . "/bin/activate");
+    enter_cmd 'pip3.10 config --site set global.progress_bar off';
+    my $pip_ints_cmd = 'pip3.10 install --no-color --no-cache-dir ';
     my $pip_install_log = '/tmp/pip_install.txt';
     my %paths = qesap_get_file_paths();
 
@@ -285,7 +287,7 @@ sub qesap_execute {
     # activate virtual environment
     script_run("source " . QESAPDEPLOY_VENV . "/bin/activate");
 
-    my $qesap_cmd = join(' ', 'python3.9', $paths{deployment_dir} . '/scripts/qesap/qesap.py',
+    my $qesap_cmd = join(' ', 'python3.10', $paths{deployment_dir} . '/scripts/qesap/qesap.py',
         $verbose,
         '-c', $paths{qesap_conf_trgt},
         '-b', $paths{deployment_dir},
@@ -416,6 +418,8 @@ sub qesap_prepare_env {
 
 =item B<FAILOK> - if not set, ansible failure result in die
 
+=item B<HOST_KEYS_CHECK> - if set, add some extra argument to the Ansible call to add allow contacting hosts not in the  KnownHost list yet. This enables the use of this api before the call to qesap.py ansible
+
 =back
 =cut
 
@@ -435,6 +439,8 @@ sub qesap_ansible_cmd {
         '-b', '--become-user=root',
         '-a', "\"$args{cmd}\"");
     assert_script_run("source " . QESAPDEPLOY_VENV . "/bin/activate");
+
+    $ansible_cmd = $args{host_keys_check} ? join(' ', $ansible_cmd, "-e 'ansible_ssh_common_args=\"-o UpdateHostKeys=yes -o StrictHostKeyChecking=accept-new\"'") : $ansible_cmd;
 
     $args{failok} ? script_run($ansible_cmd) : assert_script_run($ansible_cmd);
 
@@ -553,7 +559,8 @@ sub qesap_create_aws_credentials {
 sub qesap_create_aws_config {
     my %paths = qesap_get_file_paths();
     my $region = script_output q|awk -F ' ' '/aws_region/ {print $2}' | . $paths{qesap_conf_trgt};
-    $region = get_required_var('PUBLIC_CLOUD_REGION') if ($region =~ /^%.+%$/);
+    $region = get_required_var('PUBLIC_CLOUD_REGION') if ($region =~ /^["']?%.+%["']?$/);
+    $region =~ s/[\"\']//g;
     save_tmp_file('config', "[default]\nregion = $region\n");
     assert_script_run 'mkdir -p ~/.aws';
     assert_script_run 'curl ' . autoinst_url . "/files/config -o ~/.aws/config";
@@ -637,6 +644,10 @@ sub qesap_cluster_log_cmds {
             Cmd => 'systemctl --no-pager --full status sbd',
             Output => 'sbd.txt',
         },
+        {
+            Cmd => 'cat ~/.aws/config > aws_config.txt',
+            Output => 'aws_config.txt',
+        },
     );
 }
 
@@ -664,6 +675,47 @@ sub qesap_cluster_logs {
             }
         }
     }
+}
+
+=head3 qesap_get_vnet
+
+Return the output of az network vnet list
+=over 1
+
+=item B<RESOURCE_GROUP> - resource group name to query
+
+=back
+=cut
+
+sub qesap_get_vnet {
+    my ($resource_group) = @_;
+    my $az_cmd = join(' ', 'az', 'network',
+        'vnet', 'list',
+        '-g', $resource_group,
+        '--query', '"[0].name"',
+        '-o', 'tsv');
+    return script_output($az_cmd, 180);
+}
+
+=head3 qesap_get_az_resource_group
+
+Query and return the resource group used
+by the qe-sap-deployment
+
+=over 3
+
+=item B<SUBSTRING> - optional substring to be used with aditional grep at the end of the command
+
+=back
+=cut
+
+sub qesap_get_az_resource_group {
+    my (%args) = @_;
+    my $substring = $args{substring} ? " | grep $args{substring}" : "";
+    my $job_id = get_current_job_id();
+    my $result = script_output("az group list --query \"[].name\" -o tsv | grep $job_id" . $substring);
+    record_info('QESAP RG', "result:$result");
+    return $result;
 }
 
 1;

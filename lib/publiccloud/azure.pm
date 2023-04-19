@@ -13,6 +13,7 @@ use Mojo::JSON qw(decode_json encode_json);
 use Term::ANSIColor 2.01 'colorstrip';
 use Data::Dumper;
 use testapi qw(is_serial_terminal :DEFAULT);
+use mmapi 'get_current_job_id';
 use utils qw(script_output_retry);
 use publiccloud::azure_client;
 use publiccloud::ssh_interactive 'select_host_console';
@@ -67,13 +68,22 @@ sub find_img {
     my $sku = (check_var('PUBLIC_CLOUD_AZURE_SKU', 'gen2')) ? 'V2' : 'V1';
     $name =~ s/\.xz$//;
     $name =~ s/\.vhdfixed$/-$sku.vhd/;
+
+    my $container = $self->container;
+    my $storage_account = get_var('PUBLIC_CLOUD_STORAGE_ACCOUNT', 'eisleqaopenqa');
+    my $key = $self->get_storage_account_keys($storage_account);
+    my $cmd_show = "az storage blob show --account-key $key -o json " .
+      "--container-name '$container' --account-name '$storage_account' --name '$name' " .
+      '--query="{name: name,createTime: properties.creationTime,md5: properties.contentSettings.contentMd5}"';
+    record_info('BLOB INFO', script_output($cmd_show, proceed_on_failure => 1));
+
     my $json = script_output("az image show --resource-group " . $self->resource_group . " --name $name", 60, proceed_on_failure => 1);
-    record_info('INFO', $json);
+    record_info('IMG INFO', $json);
     my $image;
     eval {
         $image = decode_azure_json($json)->{name};
     };
-    record_info('INFO', "Cannot find image $name. Need to upload it.\n$@") if ($@);
+    record_info('IMG NOT-FOUND', "Cannot find image $name. Need to upload it.\n$@") if ($@);
     return $image;
 }
 
@@ -134,6 +144,11 @@ sub upload_img {
 
     my $arch = (check_var('PUBLIC_CLOUD_ARCH', 'arm64')) ? 'Arm64' : 'x64';
 
+    my $job_id = get_current_job_id();
+    my $openqa_url = get_required_var('OPENQA_URL');
+    my $created_by = "$openqa_url/t$job_id";
+    my $tags = "openqa_created_by=$created_by";
+
     my $rg_exist = $self->resource_exist();
 
     $self->create_resources($storage_account) if (!$rg_exist);
@@ -141,20 +156,25 @@ sub upload_img {
     my $key = $self->get_storage_account_keys($storage_account);
 
 
+    my $file_md5 = script_output("md5sum $file | cut -d' ' -f1", timeout => 240);
 
     # Check if blob already exists
     my $container = $self->container;
-    my $blobs = script_output("az storage blob list --container-name '$container' --account-name '$storage_account' | jq '.[].name'");
+    my $blobs = script_output("az storage blob list --account-key $key --container-name '$container' --account-name '$storage_account' --query '[].name' -o tsv");
     $blobs =~ s/^\s+|\s+$//g;    # trim
     my @blobs = split(/\n/, $blobs);
     if (grep(/$img_name/, @blobs)) {
-        record_info('blob', "Blob already exists, omitting upload\nExisting blobs:\n$blobs");
+        record_soft_failure("The upload_img() subroutine has been called even tho the $img_name blob exists. " .
+              "This means that publiccloud/upload_image test module did not properly detect it.");
     } else {
         record_info("blobs", $blobs);
         # Note: VM images need to be a page blob type
-        assert_script_run('az storage blob upload --max-connections 4 --account-name '
-              . $storage_account . ' --account-key ' . $key . ' --container-name ' . $self->container
-              . ' --type page --file ' . $file . ' --name ' . $img_name, timeout => 60 * 60 * 2);
+        assert_script_run('az storage blob upload --max-connections 4 --type page'
+              . " --account-name '$storage_account' --account-key '$key' --container-name '$container'"
+              . " --file '$file' --name '$img_name' --tags '$tags'", timeout => 60 * 60 * 2);
+        # After blob is uploaded we save the of it as its metadata.
+        # This is also to verify that the upload has been finished.
+        assert_script_run("az storage blob update --account-key $key --container-name '$container' --account-name '$storage_account' --name $img_name --content-md5 $file_md5");
     }
 
     if ($arch eq 'Arm64') {
@@ -367,7 +387,7 @@ sub cleanup {
 
     my $id = $args->{my_instance}->{instance_id};
 
-    script_run("az vm boot-diagnostics get-boot-log --ids $id | jq -r '.' > bootlog.txt");
+    script_run("az vm boot-diagnostics get-boot-log --ids $id | jq -r '.' > bootlog.txt", timeout => 120, die_on_timeout => 0);
     upload_logs("bootlog.txt", failok => 1);
 
     $self->SUPER::cleanup();

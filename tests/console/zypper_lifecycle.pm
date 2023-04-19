@@ -45,7 +45,7 @@ sub lifecycle_output_check {
     }
     if (get_var('SCC_REGCODE_LTSS')) {
         if ($output =~ /No products.*before/) {
-            record_soft_failure('poo#95593 https://jira.suse.com/browse/MSC-70');
+            record_info('Softfail', "poo#95593 https://jira.suse.com/browse/MSC-70");
             return;
         }
         die "SUSE Linux Enterprise Server is end of support\nOutput: '$output'" unless $output =~ /SUSE Linux Enterprise Server/;
@@ -154,8 +154,9 @@ sub run {
 
     select_console 'user-console';
     # verify that package eol defaults to product eol
+    # dash is accepted in prod EOL, despite it does not match zypper lifecycle, see poo#126794
     $output = script_output "zypper lifecycle $package", 300;
-    unless ($output =~ /$package(-\S+)?\s+$product_eol/) {
+    unless ($output =~ /$package(-\S+)?\s+($product_eol|-)/) {
         die "$package lifecycle entry incorrect:\nOutput: '$output', expected: '/$package-\\S+\\s+$product_eol'";
     }
 

@@ -17,7 +17,11 @@ sub run {
     select_console 'root-console';
 
     # Disk which /var resides on
-    my $disk = script_output 'lsblk -rnoPKNAME $(findmnt -nrvoSOURCE /var)';
+    my $device = script_output 'findmnt -nrvoSOURCE /var';
+    if (index($device, "/dev/mapper/") != -1) {
+        $device = script_output 'blkid -l -t TYPE="crypto_LUKS" -o device';
+    }
+    my $disk = script_output "lsblk -rndoPKNAME $device";
 
     # Verify that openQA resized the disk image
     my $disksize = script_output "sfdisk --show-size /dev/$disk";

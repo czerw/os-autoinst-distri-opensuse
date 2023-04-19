@@ -10,9 +10,12 @@ use Exporter 'import';
 use testapi;
 use utils;
 use version_utils;
+use Config::Tiny;
 
-
-our @EXPORT = qw(apply_workaround_poo124652 apply_workaround_bsc1206132);
+our @EXPORT = qw(
+  apply_workaround_poo124652
+  apply_workaround_bsc1206132
+);
 
 =head1 Workarounds for known issues
 
@@ -39,6 +42,7 @@ sub apply_workaround_poo124652 {
     if (!check_screen($mustmatch, %args)) {
         record_info('poo#124652', 'poo#124652 - gtk glitch not showing dialog window decoration on openQA');
         send_key('shift-f3', wait_screen_change => 1);
+        check_screen('style-sheet-selection-popup', 10);
         send_key('esc', wait_screen_change => 1);
         # in some verification tests this didn't work, so let's check
         if (!check_screen($mustmatch)) {
@@ -61,13 +65,15 @@ Then reloads systemd, in order to scan for the changed unit.
 =cut
 
 sub apply_workaround_bsc1206132 {
-    record_soft_failure('bsc#1206132 - openQA test fails in iscsi_client - launched then no response');
+    record_soft_failure('bsc#1206132 - iscsid Socket start failed after yast iscsi-client configuration, lead yast iscsi-client finish with error code');
     my $service_unit = '/usr/lib/systemd/system/iscsid.service';
-    # append the two lines at the end of the [Unit] section of the service file, as specified in bsc#1206132
-    my $cmd = q(awk -i inplace 'BEGIN {c=1}; /^$/ {if (c){print("Requires=iscsid.socket\nAfter=iscsid.socket")} c=0}; {print}' );
-    $cmd .= $service_unit;
-
-    assert_script_run($cmd);
+    my $Config = Config::Tiny->new;
+    $Config = Config::Tiny->read_string(script_output("cat $service_unit"));
+    # change the two values in [Unit] section of the service file, as specified in bsc#1206132
+    $Config->{Unit}->{Requires} = 'iscsid.socket';
+    $Config->{Unit}->{After} = 'iscsid.socket';
+    my $str = $Config->write_string();
+    assert_script_run("echo \"$str\" > $service_unit");
     systemctl('daemon-reload');
 }
 

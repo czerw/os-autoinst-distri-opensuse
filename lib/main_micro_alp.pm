@@ -14,7 +14,7 @@ use Exporter;
 use main_common;
 use main_containers qw(load_container_tests is_container_test);
 use testapi qw(check_var get_required_var get_var set_var);
-use version_utils qw(is_microos is_sle_micro is_leap_micro is_alp is_staging is_released is_transactional is_rt);
+use version_utils;
 use utils;
 use Utils::Architectures;
 use Utils::Backends;
@@ -48,16 +48,15 @@ sub load_config_tests {
 }
 
 sub load_boot_from_disk_tests {
-    if (is_s390x()) {
-        loadtest 'installation/bootloader_start';
+    loadtest 'installation/bootloader_start' if is_s390x();
+    if (check_var('FIRST_BOOT_CONFIG', 'wizard')) {
+        loadtest 'jeos/firstrun';
+    } elsif (is_s390x()) {
         loadtest 'boot/boot_to_desktop';
     } else {
-        if (check_var('FIRST_BOOT_CONFIG', 'wizard')) {
-            loadtest 'jeos/firstrun';
-        } else {
-            loadtest 'microos/disk_boot';
-        }
+        loadtest 'microos/disk_boot';
     }
+
     loadtest 'installation/system_workarounds' if (is_aarch64 && is_microos);
     replace_opensuse_repos_tests if is_repo_replacement_required;
 }
@@ -191,6 +190,7 @@ sub load_common_tests {
 sub load_transactional_tests {
     loadtest 'transactional/filesystem_ro';
     loadtest 'transactional/trup_smoke';
+    loadtest 'microos/patterns' if is_sle_micro;
     loadtest 'transactional/transactional_update';
     loadtest 'transactional/rebootmgr';
     loadtest 'transactional/health_check';
@@ -265,7 +265,34 @@ sub load_journal_check_tests {
     loadtest 'shutdown/shutdown';
 }
 
+sub load_slem_on_pc_tests {
+    my $args = OpenQA::Test::RunArgs->new();
+
+    loadtest("boot/boot_to_desktop");
+    loadtest("publiccloud/prepare_instance", run_args => $args);
+    loadtest("publiccloud/registration", run_args => $args);
+    loadtest("publiccloud/ssh_interactive_start", run_args => $args);
+    loadtest("publiccloud/instance_overview", run_args => $args);
+    loadtest("publiccloud/slem_prepare", run_args => $args);
+
+    if (get_var("PUBLIC_CLOUD_CONTAINERS")) {
+        load_container_tests() if is_container_test;
+    }
+    loadtest("publiccloud/ssh_interactive_end", run_args => $args);
+}
+
 sub load_tests {
+    # SLEM on PC
+    if (is_public_cloud()) {
+        load_slem_on_pc_tests;
+        return 1;
+    }
+
+    if (is_kernel_test()) {
+        load_kernel_tests;
+        return 1;
+    }
+
     if (get_var('REMOTE_TARGET')) {
         load_remote_target_tests;
         return 1;
@@ -300,9 +327,7 @@ sub load_tests {
 
     load_config_tests;
 
-    if (is_kernel_test()) {
-        load_kernel_tests;
-    } elsif (is_container_test || check_var('SYSTEM_ROLE', 'container-host')) {
+    if (is_container_test || check_var('SYSTEM_ROLE', 'container-host')) {
         if (is_microos) {
             # MicroOS Container-Host image runs all tests.
             load_common_tests;
@@ -327,6 +352,7 @@ sub load_tests {
         load_common_tests;
         load_transactional_tests unless is_zvm;
     }
+    loadtest 'console/year_2038_detection';
     load_journal_check_tests;
 }
 

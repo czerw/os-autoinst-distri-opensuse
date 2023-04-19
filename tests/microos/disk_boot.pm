@@ -24,12 +24,13 @@ sub run {
     # already have disabled grub timeout in order to install updates and reboot
     # therefore *aarch64* images would hang in GRUB2
     if ((get_var('HDD_1') !~ /GM-Updated/ && (is_sle_micro || is_leap_micro || is_alp)) && is_aarch64 && get_var('BOOT_HDD_IMAGE')) {
-        shift->wait_boot_past_bootloader(textmode => 1, ready_time => 300);
+        shift->wait_boot_past_bootloader(textmode => 1);
     } else {
         shift->wait_boot(bootloader_time => 300);
     }
     microos_login;
-    record_kernel_audit_messages(log_upload => 1);
+    # Avoid uploading logs in multimachine tests as no ip address is currently assigned to the interface
+    record_kernel_audit_messages(log_upload => 1) unless (get_var('NICTYPE') eq 'tap');
 }
 
 sub test_flags {
