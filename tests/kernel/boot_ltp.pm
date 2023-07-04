@@ -16,7 +16,7 @@ use serial_terminal 'select_serial_terminal';
 use Utils::Backends;
 use LTP::utils;
 use version_utils qw(is_jeos is_sle);
-use utils 'assert_secureboot_status';
+use utils qw(assert_secureboot_status systemctl);
 
 sub run {
     my ($self) = @_;
@@ -41,6 +41,12 @@ sub run {
     }
 
     select_serial_terminal;
+
+    script_run('yast kdump show', 180);
+    #assert_script_run('echo t > /proc/sysrq-trigger');
+    #assert_script_run('dmesg > dmesg-before-with-t-sysrq-trigger');
+    #upload_logs('dmesg-before-with-t-sysrq-trigger');
+    assert_script_run('echo 1 > /proc/sys/kernel/panic_on_warn');
 
     # Debug code for poo#81142
     script_run('gzip -9 </dev/fb0 >framebuffer.dat.gz');
@@ -72,6 +78,16 @@ sub test_flags {
         fatal => 1,
         milestone => 1,
     };
+}
+
+sub post_fail_hook {
+    my ($self) = @_;
+
+    script_run 'ls -lah /boot/';
+    script_run 'tar -cvJf /tmp/crash_saved.tar.xz -C /var/crash .';
+    upload_logs '/tmp/crash_saved.tar.xz';
+
+    $self->SUPER::post_fail_hook;
 }
 
 1;
