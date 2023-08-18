@@ -151,7 +151,7 @@ sub add_custom_grub_entries {
         my $script_new_esc = $script_new =~ s~/~\\/~rg;
         assert_script_run("cp -v $script_old $script_new");
 
-        my $cmd = "sed -i -e 's/\\(args=.\\)\\(\\\$4\\)/\\1$grub_param \\2/'";
+        my $cmd = "sed -i -e 's/\\(args=.\\)\\(\\\$4\\)/\\1\\2 $grub_param'";
         $cmd .= " -e 's/\\(Advanced options for %s\\)/\\1 ($grub_param)/'";
         $cmd .= " -e 's/\\(menuentry .\\\$(echo .\\\$title\\)/\\1 ($grub_param)/'";
         $cmd .= " -e 's/\\(menuentry .\\\$(echo .\\\$os\\)/\\1 ($grub_param)/' $script_new";
