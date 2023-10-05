@@ -20,7 +20,7 @@ use Utils::Backends 'is_pvm';
 sub configure_remote_admin {
     # Force ncurses mode on powerVM setup to skip ssh forwarding x11 console
     my %params = (yast2_module => 'remote');
-    $params{yast2_opts} = '--ncurses' if (get_var("FIPS_ENABLED") && is_pvm);
+    $params{yast2_opts} = '--ncurses' if ((get_var("FIPS_ENABLED") && is_pvm) || get_var("IPXE"));
     my $module_name = y2_module_consoletest::yast2_console_exec(%params);
     # Remote Administration Settings
     assert_screen 'yast2_vnc_remote_administration';

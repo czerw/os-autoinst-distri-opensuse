@@ -10,6 +10,7 @@ schedule:
 - autoyast/repos
 - autoyast/clone
 - autoyast/logs
+- '{{vnc}}'
 - console/force_scheduled_tasks
 - autoyast/autoyast_reboot
 - installation/handle_reboot
@@ -83,4 +84,7 @@ conditional_schedule:
         - x11/oomath
         - x11/oocalc
         - x11/evolution
-...
+  vnc:
+    IPXE:
+      1:
+        - console/yast2_vnc
