@@ -19,6 +19,7 @@
 # - Setup stunnel server if necessary
 # - Setup mariadb server if necessary
 # - Setup nfs server if necessary
+# - Setup iperf server if necessary
 # - Create locks for each server created
 # Maintainer: Pavel Sladek <psladek@suse.com>
 
@@ -50,6 +51,7 @@ my $xdmcp_server_set = 0;
 my $iscsi_server_set = 0;
 my $iscsi_tgt_server_set = 0;
 my $nfs_server_set = 0;
+my $iperf_server_set = 0;
 
 my $setup_script;
 my $disable_firewall = 0;
@@ -475,6 +477,17 @@ sub setup_iscsi_tgt_server {
     $iscsi_tgt_server_set = 1;
 }
 
+sub setup_iperf_server {
+    return if $iperf_server_set;
+
+    # Install iperf
+    assert_script_run('SUSEConnect -p PackageHub/15.4/x86_64');
+    zypper_call('in iperf');
+    # Start iperf server in daemon mode
+    assert_script_run('iperf3 -s -D');
+    $iperf_server_set = 1;
+}
+
 sub setup_aytests {
     # install the aytests-tests package and export the tests over http
     my $aytests_repo = get_var("AYTESTS_REPO_BRANCH", 'master');
@@ -639,6 +652,9 @@ sub run {
     }
     if (exists $server_roles{nfs}) {
         setup_nfs_server();
+    }
+    if (exists $server_roles{iperf}) {
+        setup_iperf_server();
     }
 
     die "no services configured, SUPPORT_SERVER_ROLES variable missing?" unless $setup_script;

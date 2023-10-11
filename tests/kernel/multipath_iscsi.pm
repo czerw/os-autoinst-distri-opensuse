@@ -26,6 +26,10 @@ sub run {
     # Check connectivity to target inside multimachine network (supportserver)
     ping_size_check($target);
 
+    # Measure network speed to target inside multimachine network
+    zypper_call("in iperf");
+    assert_script_run("iperf3 -c ${target}");
+
     # Install iscsi
     zypper_call("in open-iscsi");
 
