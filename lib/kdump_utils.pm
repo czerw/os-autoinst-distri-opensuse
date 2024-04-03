@@ -54,8 +54,6 @@ sub get_repo_url_for_kdump_sle {
 }
 
 sub prepare_for_kdump_sle {
-    script_run "echo nameserver 10.168.192.1 > /etc/resolv.conf";
-    script_run "cat /etc/resolv.conf";
     # debuginfos for kernel has to be installed from build-specific directory on FTP.
     my $url = get_repo_url_for_kdump_sle();
     if (defined $url) {

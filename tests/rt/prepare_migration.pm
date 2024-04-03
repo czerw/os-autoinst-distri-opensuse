@@ -18,13 +18,15 @@ use strict;
 use warnings;
 use testapi;
 use serial_terminal 'select_serial_terminal';
+use utils;
 
 sub run() {
     select_serial_terminal;
     assert_script_run 'SUSEConnect --cleanup';
     my $scc_regcode_rt = get_required_var 'SCC_REGCODE_RT';
     assert_script_run "SUSEConnect -r ${scc_regcode_rt}", timeout => 90;
-    assert_script_run "SUSEConnect -p sle-module-containers/15.4/x86_64", timeout => 90;
+    assert_script_run "SUSEConnect -p sle-module-containers/15.5/x86_64", timeout => 90;
+    zypper_call "rm libopenssl-devel";
 }
 
 sub test_flags {

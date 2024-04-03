@@ -87,7 +87,7 @@ sub run {
     # Retrieve PID of bash on bg
     # Save PID in bash env
     assert_script_run 'useradd -m rt_tester';
-    assert_script_run "sudo -bu rt_tester 'bash'";
+    assert_script_run "sudo -bu rt_tester bash -i";
     assert_script_run q{BG_BASH_PID=`ps -U rt_tester | awk 'END{print $1}'`};
 
     # User *rt_tester* has created a proces with SCHED_OTHER and Priority 0

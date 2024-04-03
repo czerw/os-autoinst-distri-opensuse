@@ -50,9 +50,6 @@ sub run {
     select_console('root-console') if get_var('LTP_DEBUG');
     select_serial_terminal;
 
-    script_run "echo nameserver 10.168.192.1 > /etc/resolv.conf";
-    script_run "cat /etc/resolv.conf";
-
     # Debug code for poo#81142
     script_run('gzip -9 </dev/fb0 >framebuffer.dat.gz');
     upload_logs('framebuffer.dat.gz', failok => 1);
