@@ -24,7 +24,7 @@ sub run() {
     assert_script_run 'SUSEConnect --cleanup';
     my $scc_regcode_rt = get_required_var 'SCC_REGCODE_RT';
     assert_script_run "SUSEConnect -r ${scc_regcode_rt}", timeout => 90;
-    assert_script_run "SUSEConnect -p sle-module-containers/15.4/x86_64", timeout => 90;
+    assert_script_run "SUSEConnect -p sle-module-containers/15.5/x86_64", timeout => 90;
 }
 
 sub test_flags {

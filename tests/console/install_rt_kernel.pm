@@ -16,7 +16,7 @@ use utils qw(zypper_call);
 sub run {
     select_serial_terminal;
 
-    zypper_call('rm kernel-default kernel-rt_debug');
+    zypper_call('rm kernel-default');
     zypper_call('in kernel-rt');
 }
 
