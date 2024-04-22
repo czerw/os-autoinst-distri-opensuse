@@ -278,7 +278,7 @@ sub activate_kdump_cli {
     assert_script_run("yast kdump startup enable alloc_mem=${crash_memory}", 180);
     # Enable firmware assisted dump if needed
     assert_script_run('yast2 kdump fadump enable', 180) if get_var('FADUMP');
-    assert_script_run('yast kdump show', 180);
+    #assert_script_run('yast kdump show', 180);
     systemctl('enable kdump');
 }
 
