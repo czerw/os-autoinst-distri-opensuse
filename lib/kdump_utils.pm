@@ -251,6 +251,10 @@ sub determine_crash_memory {
 
 # Activate kdump using yast command line interface
 sub activate_kdump_cli {
+
+    assert_script_run 'cp /usr/etc/ssh/sshd_config /etc/ssh/sshd_config';
+    assert_script_run "sed -i '/#PermitRootLogin/ s/.*/PermitRootLogin yes/' /etc/ssh/sshd_config";
+    systemctl 'restart sshd';
     # Skip configuration, if is kdump already enabled and no special memory settings is required
     # and always proceed with kdump configuration if fadump is requested
     # Yast cli may timeout on with XEN bsc#1206274, we need to check configuration directly
