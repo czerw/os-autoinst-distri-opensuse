@@ -55,6 +55,8 @@ sub get_repo_url_for_kdump_sle {
 }
 
 sub prepare_for_kdump_sle {
+    zypper_call("ar -G -f http://download.suse.de/ibs/home:/mwilck:/branches:/SUSE:/SLE-15-SP7:/GA/standard/ mpath");
+    zypper_call("dup --from mpath --allow-vendor-change");
     # debuginfos for kernel has to be installed from build-specific directory on FTP.
     my $url = get_repo_url_for_kdump_sle();
     if (defined $url) {
