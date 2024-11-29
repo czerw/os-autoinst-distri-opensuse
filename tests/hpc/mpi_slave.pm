@@ -20,6 +20,8 @@ sub run ($self) {
     my %exports_path = (
         bin => '/home/bernhard/bin'
     );
+
+    zypper_call "ar -G http://download.suse.de/ibs/home:/NMorey:/branches:/SUSE:/SLE-15-SP7:/GA/standard/home:NMorey:branches:SUSE:SLE-15-SP7:GA.repo";
     zypper_call("in $mpi-gnu-hpc");
     barrier_wait('CLUSTER_PROVISIONED');
     record_info 'CLUSTER_PROVISIONED', strftime("\%H:\%M:\%S", localtime);

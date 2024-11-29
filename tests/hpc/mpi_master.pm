@@ -36,6 +36,8 @@ sub run ($self) {
     my $user_virtio_fixed = isotovideo::get_version() >= 35;
     my $prompt = $user_virtio_fixed ? $testapi::username . '@' . get_required_var('HOSTNAME') . ':~> ' : undef;
 
+    zypper_call "ar -G http://download.suse.de/ibs/home:/NMorey:/branches:/SUSE:/SLE-15-SP7:/GA/standard/home:NMorey:branches:SUSE:SLE-15-SP7:GA.repo";
+    
     script_run("sudo -u $testapi::username mkdir -p $exports_path{bin}");
     zypper_call("in $mpi-gnu-hpc $mpi-gnu-hpc-devel");
 
