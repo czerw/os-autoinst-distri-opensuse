@@ -4,7 +4,6 @@ description:    >
     testing.
 vars:
     DESKTOP: textmode
-    MULTIPATH: 1
     LVM: 1
     ENCRYPT: 1
     HDDMODEL: scsi-hd
@@ -14,7 +13,6 @@ schedule:
     - installation/bootloader_start
     - installation/welcome
     - installation/scc_registration
-    - installation/multipath
     - installation/addon_products_sle
     - installation/system_role
     - installation/partitioning
