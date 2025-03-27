@@ -324,6 +324,9 @@ sub run {
     select_serial_terminal;
     export_ltp_env;
 
+    # Workaround for bsc#1240089
+    zypper_call("rm wb-cifs-idmap-plugin");
+
     # cockpit login message sporadically breaks login in boot_ltp
     script_run '[ -f /etc/issue.d/cockpit.issue ] && rm /etc/issue.d/cockpit.issue';
 
