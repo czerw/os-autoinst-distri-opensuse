@@ -30,13 +30,13 @@
 
 <h1 id="COPYRIGHT">COPYRIGHT</h1>
 
-<p>Copyright &copy; 2020 SUSE LLC</p>
+<p>Copyright 2020 SUSE LLC</p>
 
 <p>SPDX-License-Identifier: FSFAP</p>
 
 <h1 id="AUTHORS">AUTHORS</h1>
 
-<p>QE YaST &lt;qa-sle-yast@suse.de&gt;</p>
+<p>QE Yam &lt;qe-yam at suse de&gt;</p>
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
@@ -46,45 +46,49 @@
 
 <p>Handles a selection box.</p>
 
-<pre><code>      {
-        &quot;class&quot; : &quot;YSelectionBox&quot;,
-        &quot;debug_label&quot; : &quot;selection box title&quot;,
-        &quot;hstretch&quot; : true,
-        &quot;icon_base_path&quot; : &quot;&quot;,
-        &quot;id&quot; : &quot;test_id&quot;,
-        &quot;items&quot; :
-        [
-          {
-            &quot;label&quot; : &quot;selection 1&quot;,
-            &quot;selected&quot; : true
-          },
-          {
-            &quot;label&quot; : &quot;selection 2&quot;
-          },
-          {
-            &quot;label&quot; : &quot;selection 3&quot;
-          }
-        ],
-        &quot;items_count&quot; : 3,
-        &quot;label&quot; : &quot;&amp;selection box title&quot;,
-        &quot;vstretch&quot; : true
-      }</code></pre>
+<pre><code>{
+  &quot;class&quot; : &quot;YSelectionBox&quot;,
+  &quot;debug_label&quot; : &quot;selection box title&quot;,
+  &quot;hstretch&quot; : true,
+  &quot;icon_base_path&quot; : &quot;&quot;,
+  &quot;id&quot; : &quot;test_id&quot;,
+  &quot;items&quot; :
+  [
+    {
+      &quot;label&quot; : &quot;selection 1&quot;,
+      &quot;selected&quot; : true
+    },
+    {
+      &quot;label&quot; : &quot;selection 2&quot;
+    },
+    {
+      &quot;label&quot; : &quot;selection 3&quot;
+    }
+  ],
+  &quot;items_count&quot; : 3,
+  &quot;label&quot; : &quot;&amp;selection box title&quot;,
+  &quot;vstretch&quot; : true
+}</code></pre>
 
 <h2 id="Class-and-object-methods">Class and object methods</h2>
 
 <p><b>select($item)</b> - Select item in a SelectionBox object.</p>
 
+<p>This action puts the item in focus (i.e highlights it), but does not check a checkbox associated with the item. The item is identified by its label.</p>
+
+<p><b>check($item)</b> - Check checkbox for an item in a SelectionBox object.</p>
+
 <p>The item is identified by its label.</p>
 
-<p><b>check($item)</b> - Select item in a SelectionBox object.</p>
-
-<p>The item is identified by its label.</p>
-
-<p><b>uncheck($item)</b> - Unselect item in a SelectionBox object.</p>
+<p><b>uncheck($item)</b> - Uncheck checkbox for an item in a SelectionBox object.</p>
 
 <p>The item is identified by its label.</p>
 
 <p><b>items()</b> - returns a map of available items in the SelectionBox object.</p>
+
+<p><b>selected_items()</b> - get a list of selected items</p>
+
+<p>This method returns an array with all the labels of items that are selected in the current class object.</p>
 
 
 </body>
