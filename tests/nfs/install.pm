@@ -47,6 +47,9 @@ sub install_testsuite {
     my $testsuite = shift;
     my ($url, $rel);
 
+    zypper_ar('http://download.opensuse.org/repositories/home:/czerw:/test/openSUSE_Tumbleweed/', name => 'xdrlib');
+    zypper_call('in python313-standard-xdrlib');
+
     if (get_var("PYNFS")) {
         $url = get_var('PYNFS_GIT_URL', 'git://git.linux-nfs.org/projects/cdmackay/pynfs.git');
         $rel = get_var('PYNFS_RELEASE');
