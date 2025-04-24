@@ -75,7 +75,8 @@ sub load_kernel_tests {
         loadtest_kernel 'install_ltp';
 
         if ($needs_update && !get_var('KGRAFT')) {
-            loadtest 'transactional/install_updates';
+#            loadtest 'transactional/install_updates';
+            loadtest_kernel 'update_kernel';
         }
 
         if (get_var('LIBC_LIVEPATCH')) {
