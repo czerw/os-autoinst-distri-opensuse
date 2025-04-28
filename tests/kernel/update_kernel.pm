@@ -74,7 +74,11 @@ sub update_kernel {
     my ($self, $repo, $incident_id) = @_;
     my $devel_pack = get_kernel_devel_flavor;
 
-    fully_patch_system;
+    #fully_patch_system;
+    record_info('UPDATE', 'Updating system');
+    trup_call('up', timeout => 1800);
+    process_reboot(trigger => 1);
+
     install_package("--recommends $devel_pack") if (!is_sle('<12') &&
         !(check_var('SLE_PRODUCT', 'slert') && is_sle_micro('<6.2')));
 
@@ -96,10 +100,8 @@ sub update_kernel {
     else {
         # Use single patch or patch list
         if (is_transactional) {
-            # Proceed with transactional-update patch
-            trup_call("patch");
-            # Reboot system after patch, to make sure that further checks are done on updated system
-            reboot_on_changes;
+            # Fully patch system with update repositories
+            fully_patch_system;
         } else {
             zypper_call("in -l -t patch $patches", exitcode => [0, 102, 103], log => 'zypper.log', timeout => 1400);
         }
