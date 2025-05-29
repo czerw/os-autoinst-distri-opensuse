@@ -215,7 +215,7 @@
       <timeout config:type="integer">45</timeout>
       % if ($check_var->('BACKEND', 'ipmi')) {
       <terminal>console</terminal>
-      <append>console=ttyS1,115200 console=tty0 plymouth.ignore-serial-consoles</append>
+      <append>console=ttyS1,115200 plymouth.enable=0</append>
       % }
     </global>
   </bootloader>
