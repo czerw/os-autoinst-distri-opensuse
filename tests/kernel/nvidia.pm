@@ -25,6 +25,7 @@ sub run
 
     nvidia_utils::install(reboot => 1);
     nvidia_utils::validate();
+
 }
 
 1;
