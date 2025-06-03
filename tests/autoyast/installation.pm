@@ -183,6 +183,18 @@ sub run {
         if (match_has_tag('autoyast-boot')) {
             # press enter if grub timeout is disabled, like we have in reinstall scenarios
             send_key 'ret';
+            for (1 .. 10) {
+                save_screenshot;
+                record_info ('BEFORE ENTER');
+                send_key('ret') if check_screen 'autoyast-boot';
+                record_info ('AFTER ENTER');
+                record_info ('BEFORE alt-o');
+                save_screenshot;
+                send_key('alt-o');
+                record_info ('AFTER alt-o');
+                save_screenshot;
+                sleep 2;
+            }
             # if see grub, we get to the second stage, as it appears after bios-boot which we may miss
             # for case with startshell we need to back to the shell after reboot page shows
             last unless (get_var('EXTRABOOTPARAMS', '') =~ m/startshell=1/);
