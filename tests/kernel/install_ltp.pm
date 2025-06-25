@@ -348,7 +348,8 @@ sub run {
     # Lock kernel default on transactional system and RT flavors
     # This is workaround for poo#165036 to prevent kernel-default and kernel-default-base installation
     zypper_call("al kernel-default kernel-default-base") if (is_transactional && (get_var('FLAVOR', '') =~ /Base-RT-Updates|Base-RT|Base-RT-encrypted|Base-Kernel-RT/));
-
+#    record_info 'R1';
+#    reboot_on_changes;
     if ($inst_ltp =~ /git/i) {
         install_build_dependencies;
         install_runtime_dependencies;
@@ -362,13 +363,14 @@ sub run {
     }
     else {
         add_ltp_repo;
-        install_from_repo();
+        #install_from_repo();
         if (get_var("LTP_GIT_URL")) {
             install_build_dependencies;
             install_selected_from_git;
         }
     }
-
+#    record_info 'R2';
+#    reboot_on_changes;
     log_versions 1;
 
     zypper_call('in efivar') if is_sle('12+') || is_opensuse;
@@ -393,7 +395,7 @@ sub run {
         reboot_on_changes;
     }
 
-    setup_network;
+    #setup_network;
 
     # we don't run LVM tests in 32bit, thus not generating the runtest file
     # for 32 bit packages

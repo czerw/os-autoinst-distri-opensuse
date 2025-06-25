@@ -151,6 +151,13 @@ sub add_custom_grub_entries {
 
     my $i = 10;
     foreach my $grub_param (@grub_params) {
+
+        record_info('FSTAB-BEFORE');
+        transactional::enter_trup_shell(global_options => '-c');
+        script_output('cat /etc/fstab');
+        script_output('btrfs fi usage /');
+        transactional::exit_trup_shell();
+
         $i++;
         my $script_new = "/etc/grub.d/${i}_linux_openqa";
         bmwqemu::fctinfo("Processing script '$script_new'");
@@ -173,6 +180,16 @@ sub add_custom_grub_entries {
         die("Unexpected number of new grub entries: $cnt_new, expected: " . ($cnt_old)) if ($cnt_old != $cnt_new);
         $cnt_new = script_output("$run_cmd grep -c -E 'linux.*(/boot|/vmlinu[xz]-).* $grub_param' " . GRUB_CFG_FILE);
         die("Unexpected number of new grub entries with '$grub_param': $cnt_new, expected: " . ($cnt_old)) if ($cnt_old != $cnt_new);
+
+
+        record_info('FSTAB-AFTER');
+        transactional::enter_trup_shell(global_options => '-c');
+        script_output('cat /etc/fstab');
+        script_output('btrfs fi usage /');
+        transactional::exit_trup_shell();
+        record_info("R:${grub_param}");
+
+#        transactional::reboot_on_changes();
     }
 }
 
