@@ -82,6 +82,9 @@ sub update_kernel {
     elsif (get_var('COCO')) {
         zypper_call('in kernel-devel-coco');
     }
+    elsif (get_var('KERNEL_64KB')) {
+        zypper_call('in kernel-64kb-devel');
+    }
     elsif (is_sle('12+')) {
         zypper_call('in kernel-devel');
     }
@@ -564,6 +567,11 @@ sub run {
     }
     elsif (get_var('COCO')) {
         $kernel_package = 'kernel-coco';
+        $self->prepare_kernel($kernel_package);
+        $self->update_kernel($repo, $incident_id);
+    }
+    elsif (get_var('KERNEL_64KB')) {
+        $kernel_package = 'kernel-64kb';
         $self->prepare_kernel($kernel_package);
         $self->update_kernel($repo, $incident_id);
     }
