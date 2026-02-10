@@ -40,23 +40,6 @@
           echo 'PermitRootLogin yes' > /etc/ssh/sshd_config.d/root.conf
           systemctl enable sshd
         |||
-      },
-      {
-        name: 'set grub terminal to console',
-        chroot: true,
-        content: |||
-          #!/usr/bin/env bash
-          set -x
-          pwd
-          mount
-          lsblk
-          cat  /etc/default/grub
-          echo  "# $(date) - debug"  >> /etc/default/grub
-          sed -i 's/^GRUB_TERMINAL=.*/GRUB_TERMINAL=\"console\"/' /etc/default/grub
-          cat  /etc/default/grub
-          update-bootloader --refresh
-          echo "Bootloader exit code $?"
-        |||
       }
     ]
   }
