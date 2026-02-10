@@ -56,6 +56,7 @@
           cat  /etc/default/grub
           update-bootloader --refresh
           echo "Bootloader exit code $?"
+          cat /var/log/pbl.log
         |||
       }
     ]
