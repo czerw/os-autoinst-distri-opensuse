@@ -68,6 +68,9 @@ sub setup {
     }
     record_info("test_dirs", join(" ", @test_dirs));
 
+    run_command "mkdir ~/.docker || true";
+    run_command "echo {} > ~/.docker/config.json";
+
     # Preload Docker images used for testing
     my $frozen_images = script_output q(grep -oE '[[:alnum:]./_-]+:[[:alnum:]._-]+@sha256:[0-9a-f]{64}' Dockerfile | xargs echo);
     assert_script_run "curl -o contrib/download-frozen-image-v2.sh " . data_url("containers/download-frozen-image.sh");
@@ -131,7 +134,7 @@ sub run {
         run_command "pushd $dir";
         run_command "$env gotestsum --junitfile $report.xml --format standard-verbose ./... -- -tags '$tags' |& tee -a /var/tmp/report.txt", timeout => 900;
         patch_junit "docker", $version, "$report.xml", @xfails;
-        parse_extra_log(XUnit => "$report.xml");
+        parse_extra_log(XUnit => "$report.xml", timeout => 180);
         run_command "popd";
     }
     upload_logs("/var/tmp/report.txt");
