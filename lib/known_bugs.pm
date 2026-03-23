@@ -61,14 +61,16 @@ sub create_list_of_serial_failures {
 
     push @$serial_failures, {type => 'soft', message => 'bsc#1103199', pattern => qr/serial-getty.*service: Service hold-off time over, scheduling restart/};
 
-    if (is_kernel_test()) {
+ if (is_kernel_test()) {
         my $type = (is_ltp_test() || is_kselftest()) ? 'soft' : 'hard';
         push @$serial_failures, {type => $type, message => 'Kernel Oops found', pattern => quotemeta 'Oops:', post_boot_type => 'hard'};
         push @$serial_failures, {type => $type, message => 'Kernel BUG found', pattern => qr/kernel BUG at/i, post_boot_type => 'hard'};
-        push @$serial_failures, {type => $type, message => 'WARNING CPU in kernel messages', pattern => quotemeta 'WARNING: CPU', post_boot_type => 'hard', soft_on_expect_warn => 1};
+        # Soft override for known scheduler warnings in kernel/sched/sched.h bsc#1259617
+        push @$serial_failures, {type => 'soft', message => 'Known scheduler WARNING bsc#1259617', pattern => qr/WARNING: CPU.*kernel\/sched\/sched\.h/};
+        push @$serial_failures, {type => $type, message => 'WARNING CPU in kernel messages', pattern => qr/WARNING: CPU(?!.*kernel\/sched\/sched\.h)/, post_boot_type => 'hard', soft_on_expect_warn => 1};
         push @$serial_failures, {type => $type, message => 'Kernel stack is corrupted', pattern => quotemeta 'stack-protector: Kernel stack is corrupted', post_boot_type => 'hard'};
         push @$serial_failures, {type => $type, message => 'Kernel BUG found', pattern => quotemeta 'BUG: failure at', post_boot_type => 'hard'};
-        push @$serial_failures, {type => $type, message => 'Kernel Oops found', pattern => quotemeta '-[ cut here ]-', post_boot_type => 'hard', soft_on_expect_warn => 1};
+        push @$serial_failures, {type => 'soft', message => 'Kernel Oops found', pattern => quotemeta '-[ cut here ]-', post_boot_type => 'hard', soft_on_expect_warn => 1};
         # bsc#1229025, but must be soft because any LTP test which intentionally triggers OOM killer will produce this call trace as well
         push @$serial_failures, {type => 'soft', message => 'Kernel Call Trace found', pattern => quotemeta 'Call Trace:'};
     }
