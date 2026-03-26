@@ -132,7 +132,10 @@ sub run {
     # Register UEFI boot entry after dd
     if (get_var('IPXE_UEFI')) {
         my $distri = get_var('DISTRI');
-        assert_script_run("efibootmgr --create --disk ${device} --part 2 --label '${distri}' --loader '\\EFI\\BOOT\\bootx64.efi'");
+        my $efi_loader = is_x86_64 ? '\\EFI\\BOOT\\bootx64.efi' : '\\EFI\\BOOT\\bootaa64.efi';
+        remove_efiboot_entry (boot_entry => $distri);
+        assert_script_run("efibootmgr --create --disk ${device} --part 2 --label '${distri}' --loader '${efi_loader}'");
+        record_info('efiboot information', script_output('efibootmgr -v'));
     }
 
     # We have to use force option to reboot command as installer doesn't have fully running systemd environment
