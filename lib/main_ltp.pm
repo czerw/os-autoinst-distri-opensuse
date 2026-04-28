@@ -48,7 +48,7 @@ sub load_kernel_tests {
             }
             replace_opensuse_repos_tests if is_repo_replacement_required;
             loadtest 'transactional/host_config';
-            loadtest 'console/suseconnect_scc' if is_sle_micro;
+            loadtest 'console/suseconnect_scc';
         }
 
         if (get_var('CHANGE_KERNEL_REPO') ||
