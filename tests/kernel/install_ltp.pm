@@ -170,6 +170,8 @@ sub prepare_ltp_git {
 
 sub install_selected_from_git {
     prepare_ltp_git;
+    # LTP master no longer builds libltp.a as part of "make modules" (poo#210882)
+    assert_script_run('make -j$(getconf _NPROCESSORS_ONLN) lib-all', timeout => 600);
     assert_script_run('make -j$(getconf _NPROCESSORS_ONLN) modules', timeout => 600);
     assert_script_run('make -j$(getconf _NPROCESSORS_ONLN) modules-install');
 }
